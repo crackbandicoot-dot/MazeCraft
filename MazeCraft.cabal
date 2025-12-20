@@ -1,0 +1,24 @@
+cabal-version:      2.4
+name:               MazeCraft
+version:            0.1.0.0
+synopsis:           A maze generation and solving application
+description:        Generate and solve mazes using Haskell
+license:            MIT
+author:             Developer
+maintainer:         developer@example.com
+category:           Application
+build-type:         Simple
+
+common warnings
+    ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+
+executable MazeCraft
+    import:           warnings
+    main-is:          Main.hs
+    other-modules:    UI
+                    , MazeGenerator
+                    , MazeSolver
+                    , DataStructures
+    build-depends:    base >=4.14 && <5
+    hs-source-dirs:   src
+    default-language: Haskell2010
