@@ -1,1 +1,50 @@
+# .gitignore for MazeCraft (Haskell / Cabal / GHC build artifacts)
+
+# Cabal / Stack / GHC
+dist-newstyle/
+dist/
+.stack-work/
+/.ghc.environment.*
+cabal.project.local
+cabal.sandbox.config
+
+# GHC intermediate and compiled files
+*.hi
+*.o
+*.dyn_o
+*.dyn_hi
+*.hi-boot
+*.hie
+*.prof
+*.hp
+*.hpc
+
+# Generated / build directories
+tmp/
+build/
+
+# Editor and OS files
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
+
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Stack / cabal cache
+/.cabal-sandbox/
+package.conf.inplace
+
+# Misc
+*.log
 .dist-newstyle
