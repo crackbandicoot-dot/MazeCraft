@@ -7,7 +7,7 @@ A maze generation and solving application written in Haskell. MazeCraft generate
 - **🎨 Web Interface**: Modern, responsive web UI with dark/light theme
 - **🔀 Random Maze Generation**: Creates unique mazes every time using Recursive Backtracking
 - **🎯 Pathfinding**: Solves mazes using BFS algorithm to find the shortest path
-- **📊 Multiple Complexity Levels**: 5 difficulty levels from simple (11x9) to complex (51x35)
+- **📊 Multiple Complexity Levels**: Many difficulty levels from simple (11x9) to complex (51x35)
 - **👁️ Solution Toggle**: Show/hide the solution path interactively
 - **💻 CLI Mode**: Original terminal interface with ASCII art visualization
 - **🌐 REST API**: JSON endpoints for maze generation and solving
