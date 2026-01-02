@@ -5,26 +5,26 @@ import System.Random (newStdGen, randomR, StdGen)
 import Data.List (sortBy)
 import Data.Ord (comparing)
 import qualified Data.Set as Set
-import System.IO.Unsafe (unsafePerformIO)
 
 -- Generate a perfect maze with given dimensions using Recursive Backtracking
 -- A perfect maze has exactly one path between any two points (no loops, no isolated areas)
 -- '#' represents walls, ' ' represents paths
 --ENTRY POINT DONT DELETE
-generateMaze :: Int -> Int -> GeneratedMaze
+generateMaze :: Int -> Int -> IO GeneratedMaze
 generateMaze width height
-    | width < 5 || height < 5 = GeneratedMaze (-1,-1) (-1,-1) []
-    | otherwise = GeneratedMaze startPos endPos mazeGrid
-  where
-    -- Get a fresh random generator for each maze
-    gen = unsafePerformIO newStdGen
-    
-    -- Start and end positions (must be on odd coordinates for the algorithm)
-    startPos = (1, 1)
-    endPos = (adjustToOdd (width - 2), adjustToOdd (height - 2))
-    
-    -- Generate the maze grid
-    mazeGrid = generatePerfectMaze width height gen
+    | width < 5 || height < 5 = return $ GeneratedMaze (-1,-1) (-1,-1) []
+    | otherwise = do
+        -- Get a fresh random generator for each maze
+        gen <- newStdGen
+        
+        -- Start and end positions (must be on odd coordinates for the algorithm)
+        let startPos = (1, 1)
+        let endPos = (adjustToOdd (width - 2), adjustToOdd (height - 2))
+        
+        -- Generate the maze grid
+        let mazeGrid = generatePerfectMaze width height gen
+        
+        return $ GeneratedMaze startPos endPos mazeGrid
 
 -- Ensure coordinate is odd (required for maze cell positions)
 adjustToOdd :: Int -> Int

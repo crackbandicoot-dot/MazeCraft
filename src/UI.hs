@@ -8,7 +8,7 @@ import DataStructures (GeneratedMaze(..), Position)
 -- ENTRY POINT DON'T DELETE
 runUI :: IO ()
 runUI = do
-    let maze = generateMaze 10 8
+    maze <- generateMaze 10 8
     let path = solveMaze maze
     putStrLn "\nGenerated Maze:"
     displayMaze maze []

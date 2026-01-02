@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>MazeCraft - Maze Generator</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Noto+Sans:wght@300..800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1c2127",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #101922; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #283039; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4754; 
+        }
+        
+        /* Maze cell animations */
+        .maze-cell {
+            transition: all 0.15s ease-out;
+            min-width: 0;
+            min-height: 0;
+            aspect-ratio: 1;
+        }
+        
+        /* Path animation */
+        @keyframes pathPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .path-cell {
+            animation: pathPulse 2s ease-in-out infinite;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#111418] dark:text-white font-display overflow-x-hidden transition-colors duration-200">
+    <div class="relative flex min-h-screen flex-col group/design-root">
+        <!-- Header -->
+        <header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e5e7eb] dark:border-b-[#283039] bg-surface-light dark:bg-background-dark px-6 py-4 lg:px-10">
+            <div class="flex items-center gap-3 text-[#111418] dark:text-white">
+                <div class="flex items-center justify-center rounded-lg bg-primary/10 p-2 text-primary">
+                    <span class="material-symbols-outlined text-2xl">grid_on</span>
+                </div>
+                <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">MazeCraft</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="themeToggle" class="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors" title="Toggle theme">
+                    <span class="material-symbols-outlined text-[#111418] dark:text-white" id="themeIcon">light_mode</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col items-center py-8 px-4 sm:px-6 lg:px-8">
+            <div class="w-full max-w-[1024px] space-y-8">
+                <!-- Title Section -->
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div class="flex flex-col gap-2">
+                        <h1 class="text-3xl font-black leading-tight tracking-[-0.033em] text-[#111418] dark:text-white md:text-4xl">
+                            Maze Generator
+                        </h1>
+                        <p class="text-base font-normal leading-normal text-[#4e5d6d] dark:text-[#9dabb9] max-w-xl">
+                            Generate complex grid-based mazes instantly. Visualize algorithms and reveal the shortest path from start to finish.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Controls Panel -->
+                <div class="rounded-xl border border-[#e5e7eb] dark:border-[#283039] bg-surface-light dark:bg-surface-dark p-6 shadow-sm">
+                    <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                        <!-- Complexity Slider -->
+                        <div class="flex-1 min-w-0 flex flex-col gap-3">
+                            <div class="flex items-center justify-between">
+                                <label class="text-base font-medium leading-normal text-[#111418] dark:text-white">Grid Complexity</label>
+                                <span id="sizeLabel" class="rounded bg-[#e5e7eb] dark:bg-[#3b4754] px-2 py-0.5 text-xs font-bold text-[#111418] dark:text-white">21x15</span>
+                            </div>
+                            <div class="relative">
+                                <input type="range" id="complexitySlider" min="1" max="100" value="50" 
+                                    class="w-full h-1.5 bg-[#e5e7eb] dark:bg-[#3b4754] rounded-full appearance-none cursor-pointer
+                                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 
+                                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 
+                                    [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer
+                                    [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-110">
+                            </div>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="h-px w-full bg-[#e5e7eb] dark:bg-[#283039] lg:h-16 lg:w-px"></div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col gap-3 sm:flex-row lg:w-auto">
+                            <button id="showSolutionBtn" 
+                                class="flex items-center justify-center gap-2 rounded-lg bg-surface-light dark:bg-transparent border border-[#e5e7eb] dark:border-[#3b4754] px-6 py-3 text-base font-bold text-[#111418] dark:text-white transition-all hover:bg-[#f3f4f6] dark:hover:bg-[#283039] focus:ring-2 focus:ring-[#3b4754] sm:min-w-[160px] disabled:opacity-50">
+                                <span class="material-symbols-outlined text-[20px]" id="solutionIcon">visibility</span>
+                                <span id="solutionBtnText">Show Solution</span>
+                            </button>
+                            <button id="generateBtn" 
+                                class="flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-base font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 focus:ring-2 focus:ring-primary/50 sm:min-w-[200px] disabled:opacity-50">
+                                <span class="material-symbols-outlined text-[20px]" id="generateIcon">refresh</span>
+                                <span id="generateBtnText">Generate New Maze</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maze Display -->
+                <div class="relative overflow-hidden rounded-2xl border border-[#e5e7eb] dark:border-[#283039] bg-surface-light dark:bg-surface-dark shadow-[0_4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+                    <!-- Status Bar -->
+                    <div class="flex items-center justify-between border-b border-[#e5e7eb] dark:border-[#283039] px-6 py-4">
+                        <div class="flex items-center gap-2">
+                            <div id="statusIndicator" class="size-2 rounded-full bg-yellow-500"></div>
+                            <span id="statusText" class="text-sm font-semibold text-[#111418] dark:text-white">Status: Ready</span>
+                        </div>
+                        <div class="flex gap-4 text-sm text-[#4e5d6d] dark:text-[#9dabb9]">
+                            <div class="flex items-center gap-1.5">
+                                <span class="block size-3 rounded-sm bg-green-500"></span> Start
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="block size-3 rounded-sm bg-red-500"></span> End
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="block size-3 rounded-sm bg-primary"></span> Path
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="block size-3 rounded-sm bg-slate-300 dark:bg-slate-700"></span> Wall
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Maze Grid Container -->
+                    <div class="relative w-full bg-[#f6f7f8] dark:bg-[#101922] p-4 md:p-10 flex items-center justify-center min-h-[360px] md:min-h-[480px]">
+                        <div id="mazeContainer" class="w-full max-w-4xl">
+                            <!-- Maze will be rendered here -->
+                            <div class="flex items-center justify-center h-64 text-[#9dabb9]">
+                                <span class="text-lg">Click "Generate New Maze" to start</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Info -->
+                    <div class="flex items-center justify-between bg-[#f9fafb] dark:bg-[#151a21] px-6 py-3 text-xs font-medium text-[#637588] dark:text-[#8898aa]">
+                        <span>Algorithm: Recursive Backtracker + BFS Solver</span>
+                        <span id="pathInfo">Path Length: --</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
